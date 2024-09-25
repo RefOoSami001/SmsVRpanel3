@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search User</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-check-input {
+            margin-top: 0.3rem;
+            cursor: pointer;
+            opacity: 0; /* Hide the default radio button */
+        }
+        .form-check-label {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .form-check-input:checked + .form-check-label::before {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .form-check-input:focus + .form-check-label::before {
+            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+        }
+        .form-check-label::before {
+            content: '';
+            display: inline-block;
+            width: 1.2em;
+            height: 1.2em;
+            margin-right: 0.5em;
+            vertical-align: text-top;
+            background: #fff;
+            border: 1px solid #adb5bd;
+            border-radius: 0.25em;
+            transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Search User Data</h1>
+        <form method="post" action="{{ url_for('search_user') }}">
+            <div class="form-group">
+                <label for="search_value">Search:</label>
+                <input type="text" class="form-control" name="search_value" id="search_value" required>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="search_type" id="search_by_username" value="username" checked>
+                <label class="form-check-label" for="search_by_username">
+                    Search by Username
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="search_type" id="search_by_number" value="number">
+                <label class="form-check-label" for="search_by_number">
+                    Search by Number
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Search</button>
+        </form>
+
+        {% if user_data %}
+            <div class="mt-4">
+                <h3>Search Results</h3>
+                <!-- Display counters if they are available -->
+                {% if total_success is not none and total_failed is not none %}
+                    <div class="alert alert-info">
+                        <p>Total Success: {{ total_success }}</p>
+                        <p>Total Failed: {{ total_failed }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Table for displaying user search data -->
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Number</th>
+                            <th>Status</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in user_data %}
+                            <tr>
+                                <td>{{ entry[0] }}</td> <!-- ID -->
+                                <td>{{ entry[1] }}</td> <!-- User -->
+                                <td>{{ entry[2] }}</td> <!-- Number -->
+                                <td>{{ entry[3] }}</td> <!-- Status -->
+                                <td>{{ entry[4] }}</td> <!-- Timestamp -->
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% elif number_data %}
+            <div class="mt-4">
+                <h3>Search Results</h3>
+                <!-- Display counters if they are available -->
+                {% if total_success is not none and total_failed is not none %}
+                    <div class="alert alert-info">
+                        <p>Total Success: {{ total_success }}</p>
+                        <p>Total Failed: {{ total_failed }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Table for displaying number search data -->
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Number</th>
+                            <th>Status</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in number_data %}
+                            <tr>
+                                <td>{{ entry[0] }}</td> <!-- ID -->
+                                <td>{{ entry[1] }}</td> <!-- Number -->
+                                <td>{{ entry[2] }}</td> <!-- Status -->
+                                <td>{{ entry[3] }}</td> <!-- Timestamp -->
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-danger mt-3">
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

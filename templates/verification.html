@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Code Finder</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Particles.js -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: auto; /* Allow scrolling */
+            height: 100vh;
+            background-color: #e7ecf1;
+        }
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            padding-bottom: 20px; /* Add space at the bottom for scrolling */
+        }
+        .form-container {
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: auto; /* Enable scrolling within the form if necessary */
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+        }
+        table th {
+            background-color: #007bff;
+            color: white;
+        }
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        table tr:hover {
+            background-color: #e0e0e0;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+        .info-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .info-item {
+            flex: 1;
+        }
+        /* Custom scrollbar styling */
+        textarea {
+            overflow-y: auto; /* Show scrollbar when needed */
+            resize: vertical; /* Allow vertical resizing */
+        }
+        textarea::-webkit-scrollbar {
+            width: 12px; /* Width of the scrollbar */
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1; /* Track color */
+            border-radius: 10px; /* Rounded corners */
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #888; /* Scrollbar color */
+            border-radius: 10px; /* Rounded corners */
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #555; /* Darker color on hover */
+        }
+        .logout-btn-container {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Verification Code Finder</h1>
+        <form method="POST" action="{{ url_for('verification_code_finder') }}">
+            <div class="form-container">
+                <!-- Logout Button -->
+                <div class="logout-btn-container mt-4">
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+                </div>
+                <div class="mb-3">
+                    <label for="phpsessid" class="form-label">PHPSESSID</label>
+                    <input type="text" id="phpsessid" name="phpsessid" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="numbers" class="form-label">Phone Numbers (space-separated)</label>
+                    <textarea id="numbers" name="numbers" class="form-control" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Get Data</button>
+                {% if results %}
+                    <div class="mt-4">
+                        <div class="info-container mb-3">
+                            <div class="info-item">
+                                <strong>Total Success:</strong> {{ results['total_success'] }}
+                            </div>
+                            <div class="info-item">
+                                <strong>Total Fail:</strong> {{ results['total_fail'] }}
+                            </div>
+                            <div class="info-item">
+                                <strong>Date:</strong> {{ results['date'] }}
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Phone Number</th>
+                                        <th>Code</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for number, code in results['codes'].items() %}
+                                        <tr>
+                                            <td>{{ number }}</td>
+                                            <td>{{ code }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    <!-- Include Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Initialize Particles.js -->
+    <script>
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 250,
+                    "density": {
+                        "enable": true,
+                        "value_area": 900
+                    }
+                },
+                "color": {
+                    "value": ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff", "#ff6600", "#66ff00", "#00ccff", "#cc00ff"]
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    }
+                },
+                "opacity": {
+                    "value": 0.6,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 6,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": false
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 1,
+                    "direction": "bottom",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": true
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": false,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": false,
+                        "mode": "push"
+                    },
+                    "resize": true
+                }
+            },
+            "retina_detect": true
+        });
+    </script>
+</body>
+</html>
