@@ -23,6 +23,7 @@ def init_db():
                         status TEXT NOT NULL,
                         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (username) REFERENCES users(username)
+                        UNIQUE(username, number, status)
                     )''')
     conn.commit()
     conn.close()
@@ -59,7 +60,7 @@ def authenticate_user(username, password):
 def add_user_data(username, number, status):
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO user_data (username, number, status) VALUES (?, ?, ?)', (username, number, status))
+    cursor.execute('INSERT OR REPLACE INTO user_data (username, number, status) VALUES (?, ?, ?)', (username, number, status))
     conn.commit()
     conn.close()
 
@@ -72,10 +73,12 @@ def get_user_data(username):
     conn.close()
     return data
 # Retrieve user data by number
-def get_number_data(number):
+def get_number_data(numbers):
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT username, number, status, timestamp FROM user_data WHERE number = ?', (number,))
+    placeholders = ','.join('?' for _ in numbers)
+    query = f'SELECT username, number, status, timestamp FROM user_data WHERE number IN ({placeholders})'
+    cursor.execute(query, numbers)
     data = cursor.fetchall()
     conn.close()
     return data
@@ -118,16 +121,8 @@ def search_user():
         if search_type == 'username':
             user_data = get_user_data(search_value)
             if user_data:
-                # Initialize counters
-                total_success = 0
-                total_failed = 0
-
-                # Count successes and failures
-                for entry in user_data:
-                    if entry[3] == 'Failed':
-                        total_failed += 1
-                    else:
-                        total_success += 1
+                total_success = sum(1 for entry in user_data if entry[3] != 'Failed')
+                total_failed = sum(1 for entry in user_data if entry[3] == 'Failed')
 
                 return render_template(
                     'user_data.html',
@@ -141,12 +136,13 @@ def search_user():
                 flash('No data found for the user', 'danger')
 
         elif search_type == 'number':
-            number_data = get_number_data(search_value)
+            # Allow multiple numbers, split by comma or space
+            numbers = re.split(r'[,\s]+', search_value)
+            number_data = get_number_data(numbers)
             if number_data:
-                # Count successes and failures
                 total_success = sum(1 for entry in number_data if entry[2] != 'Failed')
                 total_failed = sum(1 for entry in number_data if entry[2] == 'Failed')
-                
+
                 return render_template(
                     'user_data.html',
                     number_data=number_data,
@@ -156,7 +152,7 @@ def search_user():
                     total_failed=total_failed
                 )
             else:
-                flash('No data found for this number', 'danger')
+                flash('No data found for these numbers', 'danger')
 
     return render_template('user_data.html')
 
